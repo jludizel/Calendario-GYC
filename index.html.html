@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario GYC Costa Rica 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:  #003b5d;
+      --teal:  #2d7d92;
+      --gold:  #fec401;
+
+      --g-a:   #003b5d;   /* Ene–Abr */
+      --g-b:   #2d7d92;   /* May–Ago */
+      --g-c:   #b07d2a;   /* Sep–Dic */
+
+      --done-bg:     #f4f4f4;
+      --done-border: #bdbdbd;
+      --done-text:   #9e9e9e;
+
+      --curr-bg:     #fff3f3;
+      --curr-border: #e53935;
+      --curr-text:   #c62828;
+
+      --board-bg:     #f8f0ff;
+      --board-border: #8e24aa;
+      --board-text:   #6a1b9a;
+
+      --bg:     #f0f2f5;
+      --card:   #ffffff;
+      --line:   #e0e4ea;
+      --txt:    #1a202c;
+      --muted:  #6b7280;
+      --radius: 10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── HEADER (mobile base) ── */
+    header {
+      background: var(--navy);
+      padding: 0 14px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.25);
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand-text {
+      font-family: 'Cinzel', serif;
+      font-size: 14px; font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 10px; font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.3px;
+    }
+    .year-pill {
+      background: var(--gold);
+      color: var(--navy);
+      font-family: 'Cinzel', serif;
+      font-weight: 700; font-size: 11px;
+      padding: 3px 10px; border-radius: 12px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-row {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .fpill {
+      padding: 5px 12px;
+      border-radius: 16px;
+      border: 1.5px solid var(--line);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer;
+      background: #fff;
+      color: var(--muted);
+      transition: all 0.15s;
+      font-family: inherit;
+      -webkit-user-select: none; user-select: none;
+    }
+    .fpill.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .fpill:active { opacity: 0.75; }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 14px 10px 60px;
+    }
+
+    /* ── STATS ── */
+    .stats-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .stat-box {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .stat-n {
+      font-family: 'Cinzel', serif;
+      font-size: 22px; font-weight: 700; line-height: 1;
+      margin-bottom: 3px;
+    }
+    .stat-l { font-size: 11px; color: var(--muted); }
+    .stat-box.s-total .stat-n    { color: var(--navy); }
+    .stat-box.s-upcoming .stat-n { color: var(--teal); }
+    .stat-box.s-done .stat-n     { color: var(--done-text); }
+
+    /* ── LEYENDA ── */
+    .legend {
+      display: flex; flex-wrap: wrap;
+      gap: 10px 16px;
+      margin-bottom: 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+    .ldot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── TOGGLE COMPLETADOS ── */
+    .toggle-done {
+      display: block; width: 100%;
+      padding: 9px;
+      background: none;
+      border: 1.5px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12px; font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 18px;
+      transition: all 0.15s;
+    }
+    .toggle-done:active { background: var(--bg); }
+
+    /* ── MES GROUP ── */
+    .month-group { margin-bottom: 24px; }
+    .month-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .month-label {
+      font-family: 'Cinzel', serif;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .month-line { flex: 1; height: 1px; background: var(--line); }
+    .month-count {
+      font-size: 10px; color: var(--muted);
+      background: var(--bg);
+      padding: 2px 7px; border-radius: 10px;
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    /* ── EVENT CARD ── */
+    .e-wrap { margin-bottom: 7px; border-radius: var(--radius); overflow: hidden; }
+
+    .e-card {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      -webkit-user-select: none; user-select: none;
+    }
+    .e-wrap.has-detail .e-card { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+    /* Tap feedback */
+    .e-card:active { opacity: 0.9; }
+
+    /* Left color bar */
+    .e-bar { width: 4px; flex-shrink: 0; }
+
+    /* Date badge */
+    .e-date {
+      width: 50px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 10px 2px;
+      border-right: 1px solid var(--line);
+    }
+    .e-day {
+      font-family: 'Cinzel', serif;
+      font-size: 20px; font-weight: 700; line-height: 1;
+    }
+    .e-mon {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.3px; text-transform: uppercase;
+      color: var(--muted); margin-top: 2px;
+    }
+    .e-dow { font-size: 9px; color: var(--muted); margin-top: 1px; }
+
+    /* Body */
+    .e-body { flex: 1; min-width: 0; padding: 10px 10px; }
+    .e-name {
+      font-size: 13px; font-weight: 600;
+      line-height: 1.35; margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .e-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 5px; }
+    .e-mi { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--muted); }
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .chip {
+      font-size: 10px; padding: 1px 7px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .mod-badge {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.3px;
+      padding: 2px 6px; border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .mod-p { background: #e8f5e9; color: #2e7d32; }
+    .mod-v { background: #e3f2fd; color: #1565c0; }
+
+    /* Right status */
+    .e-status {
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 8px 8px;
+      gap: 2px;
+      text-align: center;
+      min-width: 50px;
+    }
+    .e-days { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; line-height: 1; }
+    .e-dlabel { font-size: 9px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted); }
+    .e-chevron {
+      font-size: 12px; color: var(--muted);
+      margin-top: 4px;
+      transition: transform 0.22s ease;
+      display: none;
+    }
+    .has-detail .e-chevron { display: block; }
+    .e-wrap.expanded .e-chevron { transform: rotate(180deg); }
+
+    /* ── EXPAND PANEL ── */
+    .e-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.28s ease;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-top: none;
+      border-bottom-left-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+    }
+    .e-wrap.expanded .e-detail { max-height: 300px; }
+    .e-detail-inner { padding: 10px 14px 12px; }
+    .e-detail-row { margin-bottom: 8px; }
+    .e-detail-row:last-child { margin-bottom: 0; }
+    .e-detail-label {
+      display: block;
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--muted); margin-bottom: 3px;
+    }
+    .e-detail-text {
+      font-size: 12px; line-height: 1.5; color: var(--txt);
+    }
+
+    /* ── STATE CLASSES ── */
+    .st-a .e-bar  { background: var(--g-a); }
+    .st-a .e-day  { color: var(--g-a); }
+    .st-a .e-days { color: var(--g-a); }
+
+    .st-b .e-bar  { background: var(--g-b); }
+    .st-b .e-day  { color: var(--g-b); }
+    .st-b .e-days { color: var(--g-b); }
+
+    .st-c .e-bar  { background: var(--g-c); }
+    .st-c .e-day  { color: var(--g-c); }
+    .st-c .e-days { color: var(--g-c); }
+
+    .st-done { opacity: 0.5; }
+    .st-done .e-card { background: var(--done-bg); }
+    .st-done .e-bar  { background: var(--done-border); }
+    .st-done .e-day  { color: var(--done-text); }
+
+    .st-curr .e-card { background: var(--curr-bg); border-color: #fcc; }
+    .st-curr .e-bar  { background: var(--curr-border); }
+    .st-curr .e-day  { color: var(--curr-text); }
+    .st-curr .e-days { color: var(--curr-text); }
+    .st-curr .e-name { color: var(--curr-text); }
+    .st-curr .e-detail { background: var(--curr-bg); border-color: #fcc; }
+
+    .st-board .e-card { background: var(--board-bg); border-color: #e1c4f0; }
+    .st-board .e-bar  { background: var(--board-border); }
+    .st-board .e-day  { color: var(--board-text); }
+    .st-board .e-days { color: var(--board-text); }
+    .st-board .e-name { color: var(--board-text); }
+    .st-board .e-detail { background: var(--board-bg); border-color: #e1c4f0; }
+
+    /* Pulso hoy */
+    .pulse-dot {
+      display: inline-block; width: 7px; height: 7px;
+      background: var(--curr-text); border-radius: 50%;
+      margin-right: 4px; vertical-align: middle;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:0.6} }
+
+    /* ── LOADING / EMPTY ── */
+    .loading, .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--line); border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 14px; font-size: 11px; color: var(--muted); }
+
+    /* ── DESKTOP ENHANCEMENTS ── */
+    @media (min-width: 600px) {
+      header { padding: 0 24px; }
+      .header-inner { height: 58px; }
+      .brand-text { font-size: 15px; }
+      main { padding: 20px 16px 60px; }
+      .filter-bar { padding: 9px 24px; }
+      .filter-row { gap: 7px; }
+      .fpill { padding: 5px 13px; }
+      .stats-row { gap: 10px; margin-bottom: 18px; }
+      .stat-box { padding: 12px 14px; }
+      .stat-n { font-size: 26px; }
+      .e-date { width: 58px; }
+      .e-day { font-size: 22px; }
+      .e-days { font-size: 17px; }
+      .e-status { min-width: 54px; padding: 10px 10px; }
+      .e-name { font-size: 13px; }
+      .e-body { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="brand-text">GYC Costa Rica</div>
+      <div class="brand-sub">Calendario de Actividades</div>
+    </div>
+    <div class="year-pill">2026</div>
+  </div>
+</header>
+
+<!-- FILTROS -->
+<div class="filter-bar">
+  <div class="filter-row" id="filterRow">
+    <button class="fpill active" data-f="all">Todos</button>
+    <button class="fpill" data-f="upcoming">Próximos</button>
+    <button class="fpill" data-f="presencial">Presencial</button>
+    <button class="fpill" data-f="virtual">Virtual</button>
+    <button class="fpill" data-f="board">Directiva</button>
+  </div>
+</div>
+
+<main>
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="ldot" style="background:var(--curr-border)"></div>Mes actual</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--done-text)"></div>Completado</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--board-border)"></div>Directiva</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--g-a)"></div>Ene–Abr</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--g-b)"></div>May–Ago</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--g-c)"></div>Sep–Dic</div>
+  </div>
+
+  <button class="toggle-done" id="toggleDone">↑ Ocultar completados</button>
+
+  <div id="cal">
+    <div class="loading"><div class="spinner"></div>Cargando actividades…</div>
+  </div>
+</main>
+
+<footer>GYC Costa Rica 2026</footer>
+
+<script>
+// ════════════════════════════════════════════════
+// DATOS
+// ════════════════════════════════════════════════
+const DEMO = [
+  {
+    fecha:'2026-02-07', mes:'Febrero', diaSem:'Sábado',
+    actividad:'Programa José María',
+    modalidad:'Presencial', lugar:'Iglesia José María Zeledón',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva',
+    objetivo:'Realizar programa de JA sobre el libro de Daniel.',
+    comentarios:'',
+    tiempoRestante:'Completado'
+  },
+  {
+    fecha:'2026-04-11', mes:'Abril', diaSem:'Sábado',
+    actividad:'Programa adultos mayores',
+    modalidad:'Presencial', lugar:'Hogar Manos de Jesús',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva',
+    objetivo:'Llevar programa y conseguir donación de 1 caja de leche para adultos mayores.',
+    comentarios:'',
+    tiempoRestante:'Completado'
+  },
+  {
+    fecha:'2026-05-01', mes:'Mayo', diaSem:'Viernes',
+    actividad:'CONGRESO — Día 1',
+    modalidad:'Presencial', lugar:'Centro Pastoral El Redil',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva, Equipo de apoyo',
+    objetivo:'Adicciones — Llamado a la juventud.',
+    comentarios:'',
+    tiempoRestante:'Completado'
+  },
+  {
+    fecha:'2026-05-03', mes:'Mayo', diaSem:'Domingo',
+    actividad:'CONGRESO — Día 2',
+    modalidad:'Presencial', lugar:'Centro Pastoral El Redil',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva, Equipo de apoyo',
+    objetivo:'Adicciones — Llamado a la juventud.',
+    comentarios:'',
+    tiempoRestante:'Completado'
+  },
+  {
+    fecha:'2026-06-28', mes:'Junio', diaSem:'Domingo',
+    actividad:'Taller Aposento Alto',
+    modalidad:'Presencial', lugar:'Watson — Parque como Fraijanes',
+    horaInicio:'', horaCierre:'',
+    encargados:'Vida devocional, Logística, Tesorería, Programación, Publicidad, Música',
+    objetivo:'Realizar programa de oración, estudio y convivio.',
+    comentarios:'Organizar merienda o almuerzo.',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-07-04', mes:'Julio', diaSem:'Sábado',
+    actividad:'Visita Zona Indígena',
+    modalidad:'Presencial', lugar:'Vereh — Turrialba',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Publicidad, Tesorería',
+    objetivo:'Realizar programa de culto para 2 grupos, conseguir comestibles y donación de ropa.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-07-25', mes:'Julio', diaSem:'Sábado',
+    actividad:'Reunión Directiva',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Todos',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-07-26', mes:'Julio', diaSem:'Domingo',
+    actividad:'Visita Cárcel',
+    modalidad:'Presencial', lugar:'',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-08-09', mes:'Agosto', diaSem:'Domingo',
+    actividad:'Seguimiento congreso #1 (Zoom)',
+    modalidad:'Virtual', lugar:'Plataforma Zoom',
+    horaInicio:'4:00 p. m.', horaCierre:'6:00 p. m.',
+    encargados:'',
+    objetivo:'Tema #1: ¿Cómo vencer el desánimo espiritual? Programa virtual con campaña de invitación fuerte que genere expectativa. Invitar a los asistentes del congreso. Formato interactivo con sesión de preguntas y respuestas.',
+    comentarios:'Propuesta: hacer mini-quizes durante el estudio (2–3 pausas con trivias). Reconocer a los que participan con un detalle —libro u otro— para fomentar la participación.',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-08-22', mes:'Agosto', diaSem:'Sábado',
+    actividad:'Estudio de Pilar GYC',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Vida devocional, Programación, Logística, Evangelismo, Publicidad, Tesorería',
+    objetivo:'Hacer día de estudio de Biblia y oración.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-08-22', mes:'Agosto', diaSem:'Sábado',
+    actividad:'Aldeas SOS Tres Ríos',
+    modalidad:'Presencial', lugar:'Aldeas Infantiles SOS Tres Ríos',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística, Vida devocional, Tesorería, Música',
+    objetivo:'Realizar visita a Aldeas SOS Tres Ríos. Conseguir donaciones para la aldea.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-09-12', mes:'Septiembre', diaSem:'Sábado',
+    actividad:'Sábado Joven — Quepos',
+    modalidad:'Presencial', lugar:'Quepos',
+    horaInicio:'', horaCierre:'',
+    encargados:'',
+    objetivo:'Realizar programa de sábado joven.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-09-13', mes:'Septiembre', diaSem:'Domingo',
+    actividad:'Feria de Salud — Quepos',
+    modalidad:'Presencial', lugar:'Quepos',
+    horaInicio:'', horaCierre:'',
+    encargados:'',
+    objetivo:'Apoyo en feria de salud.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-09-27', mes:'Septiembre', diaSem:'Domingo',
+    actividad:'Visita Cárcel',
+    modalidad:'Presencial', lugar:'',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística',
+    objetivo:'Realizar visita al centro penitenciario para compartir el amor de Dios y las actividades que nos permitan realizar.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-10-24', mes:'Octubre', diaSem:'Sábado',
+    actividad:'Reunión Directiva',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Todos',
+    objetivo:'Definir plan para el siguiente año.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-10-25', mes:'Octubre', diaSem:'Domingo',
+    actividad:'Visita Cárcel',
+    modalidad:'Presencial', lugar:'',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística',
+    objetivo:'Realizar visita al centro penitenciario para compartir el amor de Dios y las actividades que nos permitan realizar.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-10-31', mes:'Octubre', diaSem:'Sábado',
+    actividad:'Retiro — Salud Mental',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Todos, Equipo de apoyo',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-11-01', mes:'Noviembre', diaSem:'Domingo',
+    actividad:'Retiro — Salud Mental',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Todos, Equipo de apoyo',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-11-22', mes:'Noviembre', diaSem:'Domingo',
+    actividad:'Seguimiento congreso #2 (Zoom)',
+    modalidad:'Virtual', lugar:'Plataforma Zoom',
+    horaInicio:'', horaCierre:'',
+    encargados:'',
+    objetivo:'Tema #2: ¿Cómo poner fin a una relación que me destruye?',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-12-19', mes:'Diciembre', diaSem:'Sábado',
+    actividad:'Cantata — Cárcel o Calles',
+    modalidad:'Presencial', lugar:'',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística, Publicidad',
+    objetivo:'Realizar visita al centro penitenciario para compartir el amor de Dios y las actividades que nos permitan realizar.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2026-12-20', mes:'Diciembre', diaSem:'Domingo',
+    actividad:'Seguimiento congreso #3 (Zoom)',
+    modalidad:'Virtual', lugar:'Plataforma Zoom',
+    horaInicio:'', horaCierre:'',
+    encargados:'',
+    objetivo:'Tema #3: Formas de entretenimiento que no deshonran a Dios.',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  // ── 2027 (Tentativo: 30 jul – 2 ago) ──
+  {
+    fecha:'2027-07-30', mes:'Julio 2027', diaSem:'Viernes',
+    actividad:'CONGRESO GYC 2027 — Día 1 (Tentativo)',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva, Equipo de apoyo',
+    objetivo:'Congreso anual GYC Costa Rica. Fin de semana del 30 de julio al 2 de agosto de 2027.',
+    comentarios:'Fechas tentativas, sujetas a confirmación.',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2027-07-31', mes:'Julio 2027', diaSem:'Sábado',
+    actividad:'CONGRESO GYC 2027 — Día 2 (Tentativo)',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva, Equipo de apoyo',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2027-08-01', mes:'Agosto 2027', diaSem:'Domingo',
+    actividad:'CONGRESO GYC 2027 — Día 3 (Tentativo)',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva, Equipo de apoyo',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+  {
+    fecha:'2027-08-02', mes:'Agosto 2027', diaSem:'Lunes',
+    actividad:'CONGRESO GYC 2027 — Día 4 / Cierre (Tentativo)',
+    modalidad:'Presencial', lugar:'Por definir',
+    horaInicio:'', horaCierre:'',
+    encargados:'Directiva, Equipo de apoyo',
+    objetivo:'',
+    comentarios:'',
+    tiempoRestante:''
+  },
+];
+
+// ── HELPERS ──
+const MON_S = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const DOW_S = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+function daysUntil(f) {
+  if (!f) return null;
+  const ev = new Date(f + 'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((ev - now) / 86400000);
+}
+
+function monthGroup(mes) {
+  const m = (mes||'').toLowerCase();
+  const A = ['enero','febrero','marzo','abril'];
+  const B = ['mayo','junio','julio','agosto'];
+  return A.some(x=>m.includes(x)) ? 'a' : B.some(x=>m.includes(x)) ? 'b' : 'c';
+}
+
+function eventState(ev) {
+  if ((ev.tiempoRestante||'').toLowerCase() === 'completado') return 'done';
+  const d = daysUntil(ev.fecha);
+  if (d !== null) {
+    const now = new Date();
+    const edt = new Date(ev.fecha + 'T00:00:00');
+    if (now.getFullYear()===edt.getFullYear() && now.getMonth()===edt.getMonth() && d >= 0) return 'curr';
+  }
+  const n = (ev.actividad||'').toLowerCase();
+  if (n.includes('reunión directiva') || n.includes('reunion directiva')) return 'board';
+  return monthGroup(ev.mes);
+}
+
+function fmtDays(d, state) {
+  if (state==='done') return {n:'✓', l:'Completado'};
+  if (d===null)       return {n:'—', l:''};
+  if (d<0)            return {n:'✓', l:'Pasado'};
+  if (d===0)          return {n:'¡HOY!', l:'', today:true};
+  if (d===1)          return {n:'1', l:'día'};
+  if (d<30)           return {n:d, l:'días'};
+  const mo=Math.floor(d/30), dy=d%30;
+  if (dy===0) return {n:mo+'m', l:''};
+  return {n:mo+'m '+dy+'d', l:''};
+}
+
+// ── RENDER CARD ──
+function cardHTML(ev, idx) {
+  const state = eventState(ev);
+  const d   = daysUntil(ev.fecha);
+  const di  = fmtDays(d, state);
+  const dt  = ev.fecha ? new Date(ev.fecha+'T00:00:00') : null;
+  const dayN = dt ? dt.getDate() : '?';
+  const monS = dt ? MON_S[dt.getMonth()] : '';
+  const dowS = dt ? DOW_S[dt.getDay()] : (ev.diaSem||'');
+
+  // All chips shown — no truncation
+  const chips = (ev.encargados||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const chipHTML = chips.length
+    ? `<div class="chips">${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>`
+    : '';
+
+  const isVirtual = (ev.modalidad||'').toLowerCase().includes('virtual');
+  const modHTML = ev.modalidad
+    ? `<span class="mod-badge ${isVirtual?'mod-v':'mod-p'}">${isVirtual?'Virtual':'Presencial'}</span>`
+    : '';
+
+  const placeHTML = ev.lugar ? `<span class="e-mi">📍 ${ev.lugar}</span>` : '';
+  const timeHTML  = ev.horaInicio ? `<span class="e-mi">🕐 ${ev.horaInicio}${ev.horaCierre?' – '+ev.horaCierre:''}</span>` : '';
+  const pulseHTML = di.today ? `<span class="pulse-dot"></span>` : '';
+
+  const hasDetail = !!(ev.objetivo || ev.comentarios);
+
+  // Build detail panel
+  let detailHTML = '';
+  if (hasDetail) {
+    let rows = '';
+    if (ev.objetivo)    rows += `<div class="e-detail-row"><span class="e-detail-label">Objetivo</span><span class="e-detail-text">${ev.objetivo}</span></div>`;
+    if (ev.comentarios) rows += `<div class="e-detail-row"><span class="e-detail-label">Observaciones</span><span class="e-detail-text">${ev.comentarios}</span></div>`;
+    detailHTML = `<div class="e-detail"><div class="e-detail-inner">${rows}</div></div>`;
+  }
+
+  return `
+    <div class="e-wrap st-${state}${hasDetail?' has-detail':''}" data-idx="${idx}">
+      <div class="e-card">
+        <div class="e-bar"></div>
+        <div class="e-date">
+          <div class="e-day">${dayN}</div>
+          <div class="e-mon">${monS}</div>
+          <div class="e-dow">${dowS}</div>
+        </div>
+        <div class="e-body">
+          <div class="e-name">${pulseHTML}${ev.actividad||'—'}</div>
+          <div class="e-meta">${placeHTML}${timeHTML}${modHTML}</div>
+          ${chipHTML}
+        </div>
+        <div class="e-status">
+          <div class="e-days">${di.n}</div>
+          ${di.l?`<div class="e-dlabel">${di.l}</div>`:''}
+          <div class="e-chevron">▾</div>
+        </div>
+      </div>
+      ${detailHTML}
+    </div>`;
+}
+
+// ── STATE ──
+let allEvents = [], showDone = true, activeFilter = 'all';
+
+// ── RENDER ──
+function render() {
+  let evs = allEvents.map((e,i) => ({...e, _idx:i}));
+
+  if (activeFilter === 'upcoming') evs = evs.filter(e => {
+    const d = daysUntil(e.fecha);
+    return d !== null && d >= 0 && (e.tiempoRestante||'').toLowerCase() !== 'completado';
+  });
+  else if (activeFilter === 'presencial') evs = evs.filter(e => !(e.modalidad||'').toLowerCase().includes('virtual'));
+  else if (activeFilter === 'virtual')    evs = evs.filter(e =>  (e.modalidad||'').toLowerCase().includes('virtual'));
+  else if (activeFilter === 'board')      evs = evs.filter(e => {
+    const n = (e.actividad||'').toLowerCase();
+    return n.includes('reunión directiva') || n.includes('reunion directiva');
+  });
+
+  if (!showDone) evs = evs.filter(e => (e.tiempoRestante||'').toLowerCase() !== 'completado');
+
+  const cal = document.getElementById('cal');
+
+  if (!evs.length) {
+    cal.innerHTML = `<div class="empty">📅 No hay actividades para mostrar.</div>`;
+    return;
+  }
+
+  const grouped = new Map();
+  evs.forEach(e => {
+    const k = e.mes || 'Sin mes';
+    if (!grouped.has(k)) grouped.set(k, []);
+    grouped.get(k).push(e);
+  });
+
+  let html = '';
+  for (const [month, mes_evs] of grouped) {
+    const cnt = mes_evs.length;
+    html += `<div class="month-group">
+      <div class="month-header">
+        <div class="month-label">${month}</div>
+        <div class="month-line"></div>
+        <div class="month-count">${cnt} ${cnt===1?'actividad':'actividades'}</div>
+      </div>
+      ${mes_evs.map(e => cardHTML(e, e._idx)).join('')}
+    </div>`;
+  }
+  cal.innerHTML = html;
+}
+
+function renderStats() {
+  const total    = allEvents.length;
+  const done     = allEvents.filter(e => (e.tiempoRestante||'').toLowerCase()==='completado').length;
+  const upcoming = allEvents.filter(e => { const d=daysUntil(e.fecha); return d!==null&&d>=0&&(e.tiempoRestante||'').toLowerCase()!=='completado'; }).length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-box s-total">   <div class="stat-n">${total}</div>    <div class="stat-l">Total</div></div>
+    <div class="stat-box s-upcoming"><div class="stat-n">${upcoming}</div> <div class="stat-l">Próximos</div></div>
+    <div class="stat-box s-done">    <div class="stat-n">${done}</div>     <div class="stat-l">Completados</div></div>`;
+}
+
+// ── LOAD ──
+function loadData() {
+  allEvents = DEMO;
+  renderStats();
+  render();
+}
+
+// ── FILTER PILLS ──
+document.getElementById('filterRow').addEventListener('click', e => {
+  const pill = e.target.closest('.fpill');
+  if (!pill) return;
+  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeFilter = pill.dataset.f;
+  render();
+});
+
+// ── TOGGLE COMPLETADOS ──
+const toggleBtn = document.getElementById('toggleDone');
+toggleBtn.addEventListener('click', () => {
+  showDone = !showDone;
+  toggleBtn.textContent = showDone ? '↑ Ocultar completados' : '↓ Mostrar completados';
+  render();
+});
+
+// ── EXPAND CARD on tap/click ──
+document.getElementById('cal').addEventListener('click', e => {
+  const card = e.target.closest('.e-card');
+  if (!card) return;
+  const wrap = card.closest('.e-wrap.has-detail');
+  if (!wrap) return;
+  wrap.classList.toggle('expanded');
+});
+
+loadData();
+</script>
+</body>
+</html>
