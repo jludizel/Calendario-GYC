@@ -269,14 +269,30 @@
     }
     .e-days { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; line-height: 1; }
     .e-dlabel { font-size: 9px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted); }
-    .e-chevron {
-      font-size: 12px; color: var(--muted);
-      margin-top: 4px;
-      transition: transform 0.22s ease;
+    .e-chevron { display: none; }
+
+    /* ── VER MÁS hint ── */
+    .e-ver-mas {
       display: none;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px dashed var(--line);
+      font-size: 11px; font-weight: 600;
+      color: var(--teal);
     }
-    .has-detail .e-chevron { display: block; }
-    .e-wrap.expanded .e-chevron { transform: rotate(180deg); }
+    .has-detail .e-ver-mas { display: flex; }
+    .e-vm-arrow {
+      display: inline-block;
+      font-size: 14px; line-height: 1;
+      transition: transform 0.22s ease;
+    }
+    .e-wrap.expanded .e-vm-arrow { transform: rotate(180deg); }
+    .vm-open  { display: inline; }
+    .vm-close { display: none; }
+    .e-wrap.expanded .vm-open  { display: none; }
+    .e-wrap.expanded .vm-close { display: inline; }
 
     /* ── EXPAND PANEL ── */
     .e-detail {
@@ -505,7 +521,7 @@ const DEMO = [
     modalidad:'Presencial', lugar:'',
     horaInicio:'', horaCierre:'',
     encargados:'Evangelismo, Programación, Logística',
-    objetivo:'',
+    objetivo:'Realizar visita al centro penitenciario para compartir el amor de Dios y las actividades que nos permitan realizar.',
     comentarios:'',
     tiempoRestante:''
   },
@@ -761,6 +777,14 @@ function cardHTML(ev, idx) {
     detailHTML = `<div class="e-detail"><div class="e-detail-inner">${rows}</div></div>`;
   }
 
+  const verMasHTML = hasDetail
+    ? `<div class="e-ver-mas">
+        <span class="e-vm-arrow">▾</span>
+        <span class="vm-open">Ver detalle</span>
+        <span class="vm-close">Ocultar</span>
+       </div>`
+    : '';
+
   return `
     <div class="e-wrap st-${state}${hasDetail?' has-detail':''}" data-idx="${idx}">
       <div class="e-card">
@@ -774,11 +798,11 @@ function cardHTML(ev, idx) {
           <div class="e-name">${pulseHTML}${ev.actividad||'—'}</div>
           <div class="e-meta">${placeHTML}${timeHTML}${modHTML}</div>
           ${chipHTML}
+          ${verMasHTML}
         </div>
         <div class="e-status">
           <div class="e-days">${di.n}</div>
           ${di.l?`<div class="e-dlabel">${di.l}</div>`:''}
-          <div class="e-chevron">▾</div>
         </div>
       </div>
       ${detailHTML}
