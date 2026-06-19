@@ -271,28 +271,78 @@
     .e-dlabel { font-size: 9px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted); }
     .e-chevron { display: none; }
 
-    /* ── VER MÁS hint ── */
+    /* ── CARD FOOTER ── */
+    .e-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px dashed var(--line);
+      gap: 8px;
+    }
     .e-ver-mas {
       display: none;
       align-items: center;
       gap: 5px;
-      margin-top: 8px;
-      padding-top: 7px;
-      border-top: 1px dashed var(--line);
       font-size: 11px; font-weight: 600;
       color: var(--teal);
+      flex: 1;
     }
     .has-detail .e-ver-mas { display: flex; }
     .e-vm-arrow {
       display: inline-block;
-      font-size: 14px; line-height: 1;
+      font-size: 13px; line-height: 1;
       transition: transform 0.22s ease;
+      flex-shrink: 0;
     }
     .e-wrap.expanded .e-vm-arrow { transform: rotate(180deg); }
     .vm-open  { display: inline; }
     .vm-close { display: none; }
     .e-wrap.expanded .vm-open  { display: none; }
     .e-wrap.expanded .vm-close { display: inline; }
+    .e-add-cal {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      color: var(--navy);
+      background: rgba(0,59,93,0.07);
+      border: 1.5px solid rgba(0,59,93,0.2);
+      border-radius: 7px;
+      padding: 3px 9px;
+      cursor: pointer;
+      font-family: inherit;
+      -webkit-user-select: none; user-select: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .has-detail .e-add-cal { margin-left: 0; }
+    .e-add-cal:active { background: rgba(0,59,93,0.18); }
+
+    /* ── DOWNLOAD BAR ── */
+    .dl-bar {
+      background: rgba(0,59,93,0.04);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 14px;
+    }
+    .dl-inner {
+      max-width: 860px; margin: 0 auto;
+      display: flex; align-items: center;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .dl-all-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px;
+      background: var(--navy); color: white;
+      border: none; border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+      -webkit-user-select: none; user-select: none;
+      transition: opacity 0.15s;
+    }
+    .dl-all-btn:active { opacity: 0.75; }
+    .dl-hint { font-size: 11px; color: var(--muted); }
 
     /* ── EXPAND PANEL ── */
     .e-detail {
@@ -416,6 +466,14 @@
     <button class="fpill" data-f="presencial">Presencial</button>
     <button class="fpill" data-f="virtual">Virtual</button>
     <button class="fpill" data-f="board">Directiva</button>
+  </div>
+</div>
+
+<!-- DESCARGAR CALENDARIO -->
+<div class="dl-bar">
+  <div class="dl-inner">
+    <button class="dl-all-btn" id="dlAllBtn">📅 Añadir todo al calendario</button>
+    <span class="dl-hint">o toca 📅 en cada evento</span>
   </div>
 </div>
 
@@ -741,6 +799,102 @@ function fmtDays(d, state) {
   return {n:mo+'m '+dy+'d', l:''};
 }
 
+// ── ICS / CALENDAR EXPORT ──
+function escICS(s) {
+  if (!s) return '';
+  return String(s).replace(/\\/g,'\\\\').replace(/,/g,'\\,').replace(/;/g,'\\;').replace(/\n/g,'\\n');
+}
+
+function parse24h(t) {
+  if (!t) return null;
+  const s = t.toLowerCase().replace(/\s/g,'');
+  const pm = s.includes('p');
+  const nums = s.match(/\d+/g) || [];
+  let h = parseInt(nums[0]||0), m = parseInt(nums[1]||0);
+  if (pm && h !== 12) h += 12;
+  if (!pm && h === 12) h = 0;
+  return String(h).padStart(2,'0') + String(m).padStart(2,'0') + '00';
+}
+
+function nextDayStr(fechaStr) {
+  const d = new Date(fechaStr + 'T00:00:00');
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0,10).replace(/-/g,'');
+}
+
+function buildVEVENT(ev, uid) {
+  const dc = ev.fecha.replace(/-/g,'');
+  let dtStart, dtEnd;
+  if (ev.horaInicio) {
+    const s = parse24h(ev.horaInicio);
+    const e = ev.horaCierre ? parse24h(ev.horaCierre)
+      : String(parseInt(s.slice(0,2))+2).padStart(2,'0') + s.slice(2);
+    dtStart = `DTSTART;TZID=America/Costa_Rica:${dc}T${s}`;
+    dtEnd   = `DTEND;TZID=America/Costa_Rica:${dc}T${e}`;
+  } else {
+    dtStart = `DTSTART;VALUE=DATE:${dc}`;
+    dtEnd   = `DTEND;VALUE=DATE:${nextDayStr(ev.fecha)}`;
+  }
+  const desc = [
+    ev.objetivo    ? `Objetivo: ${escICS(ev.objetivo)}`       : '',
+    ev.comentarios ? `Observaciones: ${escICS(ev.comentarios)}` : '',
+    ev.encargados  ? `Encargados: ${escICS(ev.encargados)}`   : '',
+    ev.modalidad   ? `Modalidad: ${ev.modalidad}`              : '',
+  ].filter(Boolean).join('\\n\\n');
+  const lines = [
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)}Z`,
+    dtStart, dtEnd,
+    `SUMMARY:GYC · ${escICS(ev.actividad)}`,
+  ];
+  if (desc)     lines.push(`DESCRIPTION:${desc}`);
+  if (ev.lugar) lines.push(`LOCATION:${escICS(ev.lugar)}`);
+  lines.push('END:VEVENT');
+  return lines.join('\r\n');
+}
+
+const ICS_HEAD = [
+  'BEGIN:VCALENDAR','VERSION:2.0',
+  'PRODID:-//GYC Costa Rica//Calendario 2026//ES',
+  'CALSCALE:GREGORIAN','METHOD:PUBLISH',
+  'X-WR-CALNAME:GYC Costa Rica 2026',
+  'X-WR-TIMEZONE:America/Costa_Rica',
+  'BEGIN:VTIMEZONE','TZID:America/Costa_Rica',
+  'BEGIN:STANDARD',
+  'TZOFFSETFROM:-0600','TZOFFSETTO:-0600','TZNAME:CST',
+  'DTSTART:19700101T000000',
+  'END:STANDARD','END:VTIMEZONE',
+].join('\r\n');
+
+function wrapICS(body) {
+  return ICS_HEAD + '\r\n' + body + '\r\nEND:VCALENDAR';
+}
+
+function dlICS(content, filename) {
+  const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+function downloadAll() {
+  const body = allEvents
+    .filter(e => e.fecha && e.actividad)
+    .map((e,i) => buildVEVENT(e, `gyc2026-${e.fecha.replace(/-/g,'')}-${i}@gyc-cr`))
+    .join('\r\n');
+  dlICS(wrapICS(body), 'GYC-Costa-Rica-2026.ics');
+}
+
+function downloadOne(ev) {
+  const body = buildVEVENT(ev, `gyc-${ev.fecha.replace(/-/g,'')}-${Date.now()}@gyc-cr`);
+  const slug = (ev.actividad||'evento').slice(0,25).replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ]/g,'-');
+  dlICS(wrapICS(body), `GYC-${ev.fecha}-${slug}.ics`);
+}
+
 // ── RENDER CARD ──
 function cardHTML(ev, idx) {
   const state = eventState(ev);
@@ -777,13 +931,14 @@ function cardHTML(ev, idx) {
     detailHTML = `<div class="e-detail"><div class="e-detail-inner">${rows}</div></div>`;
   }
 
-  const verMasHTML = hasDetail
-    ? `<div class="e-ver-mas">
+  const footerHTML = `<div class="e-card-footer">
+      <div class="e-ver-mas">
         <span class="e-vm-arrow">▾</span>
         <span class="vm-open">Ver detalle</span>
         <span class="vm-close">Ocultar</span>
-       </div>`
-    : '';
+      </div>
+      <button class="e-add-cal" data-idx="${idx}">📅 Añadir</button>
+    </div>`;
 
   return `
     <div class="e-wrap st-${state}${hasDetail?' has-detail':''}" data-idx="${idx}">
@@ -798,7 +953,7 @@ function cardHTML(ev, idx) {
           <div class="e-name">${pulseHTML}${ev.actividad||'—'}</div>
           <div class="e-meta">${placeHTML}${timeHTML}${modHTML}</div>
           ${chipHTML}
-          ${verMasHTML}
+          ${footerHTML}
         </div>
         <div class="e-status">
           <div class="e-days">${di.n}</div>
@@ -893,14 +1048,25 @@ toggleBtn.addEventListener('click', () => {
   render();
 });
 
-// ── EXPAND CARD on tap/click ──
+// ── EXPAND CARD + CALENDAR DOWNLOAD ──
 document.getElementById('cal').addEventListener('click', e => {
+  // Calendar button — intercept before expand
+  const calBtn = e.target.closest('.e-add-cal');
+  if (calBtn) {
+    e.stopPropagation();
+    const i = parseInt(calBtn.dataset.idx);
+    if (!isNaN(i) && allEvents[i]) downloadOne(allEvents[i]);
+    return;
+  }
+  // Expand / collapse card
   const card = e.target.closest('.e-card');
   if (!card) return;
   const wrap = card.closest('.e-wrap.has-detail');
   if (!wrap) return;
   wrap.classList.toggle('expanded');
 });
+
+document.getElementById('dlAllBtn').addEventListener('click', downloadAll);
 
 loadData();
 </script>
