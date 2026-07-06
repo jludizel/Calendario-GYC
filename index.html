@@ -387,6 +387,14 @@
     .st-done .e-bar  { background: var(--done-border); }
     .st-done .e-day  { color: var(--done-text); }
 
+    .st-cancelled { opacity: 0.6; }
+    .st-cancelled .e-card { background: #fff5f5; }
+    .st-cancelled .e-bar  { background: #ef5350; }
+    .st-cancelled .e-day  { color: var(--done-text); }
+    .st-cancelled .e-name { text-decoration: line-through; color: #9e9e9e; }
+    .st-cancelled .e-days { color: #ef5350; }
+    .st-cancelled .e-detail { background: #fff5f5; border-color: #ffcdd2; }
+
     .st-curr .e-card { background: var(--curr-bg); border-color: #fcc; }
     .st-curr .e-bar  { background: var(--curr-border); }
     .st-curr .e-day  { color: var(--curr-text); }
@@ -483,13 +491,14 @@
   <div class="legend">
     <div class="legend-item"><div class="ldot" style="background:var(--curr-border)"></div>Mes actual</div>
     <div class="legend-item"><div class="ldot" style="background:var(--done-text)"></div>Completado</div>
+    <div class="legend-item"><div class="ldot" style="background:#ef5350"></div>Cancelado</div>
     <div class="legend-item"><div class="ldot" style="background:var(--board-border)"></div>Directiva</div>
     <div class="legend-item"><div class="ldot" style="background:var(--g-a)"></div>Ene–Abr</div>
     <div class="legend-item"><div class="ldot" style="background:var(--g-b)"></div>May–Ago</div>
     <div class="legend-item"><div class="ldot" style="background:var(--g-c)"></div>Sep–Dic</div>
   </div>
 
-  <button class="toggle-done" id="toggleDone">↑ Ocultar completados</button>
+  <button class="toggle-done" id="toggleDone">↑ Ocultar pasados y completados</button>
 
   <div id="cal">
     <div class="loading"><div class="spinner"></div>Cargando actividades…</div>
@@ -580,16 +589,16 @@ const DEMO = [
     horaInicio:'', horaCierre:'',
     encargados:'Evangelismo, Programación, Logística',
     objetivo:'Realizar visita al centro penitenciario para compartir el amor de Dios y las actividades que nos permitan realizar.',
-    comentarios:'',
-    tiempoRestante:''
+    comentarios:'Cancelado: cambios en la logística de las cárceles.',
+    tiempoRestante:'Cancelado'
   },
   {
     fecha:'2026-08-09', mes:'Agosto', diaSem:'Domingo',
-    actividad:'Seguimiento congreso #1 (Zoom)',
-    modalidad:'Virtual', lugar:'Plataforma Zoom',
-    horaInicio:'4:00 p. m.', horaCierre:'6:00 p. m.',
+    actividad:'Aposento Alto — Seguimiento #1',
+    modalidad:'Presencial', lugar:'J. Watson',
+    horaInicio:'', horaCierre:'',
     encargados:'',
-    objetivo:'Tema #1: ¿Cómo vencer el desánimo espiritual? Programa virtual con campaña de invitación fuerte que genere expectativa. Invitar a los asistentes del congreso. Formato interactivo con sesión de preguntas y respuestas.',
+    objetivo:'Actividades de seguimiento a los que estuvieron en el congreso. Tema #1: ¿Cómo vencer el desánimo espiritual?',
     comentarios:'Propuesta: hacer mini-quizes durante el estudio (2–3 pausas con trivias). Reconocer a los que participan con un detalle —libro u otro— para fomentar la participación.',
     tiempoRestante:''
   },
@@ -600,8 +609,8 @@ const DEMO = [
     horaInicio:'', horaCierre:'',
     encargados:'Vida devocional, Programación, Logística, Evangelismo, Publicidad, Tesorería',
     objetivo:'Hacer día de estudio de Biblia y oración.',
-    comentarios:'',
-    tiempoRestante:''
+    comentarios:'Cancelado: era un estudio conjunto con la visita de las Aldeas.',
+    tiempoRestante:'Cancelado'
   },
   {
     fecha:'2026-08-22', mes:'Agosto', diaSem:'Sábado',
@@ -610,8 +619,8 @@ const DEMO = [
     horaInicio:'', horaCierre:'',
     encargados:'Evangelismo, Programación, Logística, Vida devocional, Tesorería, Música',
     objetivo:'Realizar visita a Aldeas SOS Tres Ríos. Conseguir donaciones para la aldea.',
-    comentarios:'',
-    tiempoRestante:''
+    comentarios:'Cancelado: se traslada a otro mes.',
+    tiempoRestante:'Cancelado'
   },
   {
     fecha:'2026-09-12', mes:'Septiembre', diaSem:'Sábado',
@@ -640,7 +649,17 @@ const DEMO = [
     horaInicio:'', horaCierre:'',
     encargados:'Evangelismo, Programación, Logística',
     objetivo:'Realizar visita al centro penitenciario para compartir el amor de Dios y las actividades que nos permitan realizar.',
-    comentarios:'',
+    comentarios:'Cancelado: cambios en la logística de las cárceles.',
+    tiempoRestante:'Cancelado'
+  },
+  {
+    fecha:'2026-09-27', mes:'Septiembre', diaSem:'Domingo',
+    actividad:'Aldeas SOS Tres Ríos',
+    modalidad:'Presencial', lugar:'Aldeas Infantiles Tres Ríos',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística, Vida devocional, Tesorería, Música',
+    objetivo:'Realizar visita a la aldea SOS Tres Ríos. Conseguir donaciones para aldeas.',
+    comentarios:'Actividad evangelística que permite realizar seguimiento a los participantes del congreso.',
     tiempoRestante:''
   },
   {
@@ -684,12 +703,22 @@ const DEMO = [
     tiempoRestante:''
   },
   {
+    fecha:'2026-11-15', mes:'Noviembre', diaSem:'Domingo',
+    actividad:'Aldeas SOS Tres Ríos',
+    modalidad:'Presencial', lugar:'Aldeas Infantiles Tres Ríos',
+    horaInicio:'', horaCierre:'',
+    encargados:'Evangelismo, Programación, Logística, Vida devocional, Tesorería, Música',
+    objetivo:'Realizar visita a la aldea SOS Tres Ríos. Conseguir donaciones para aldeas.',
+    comentarios:'Actividad evangelística que permite realizar seguimiento.',
+    tiempoRestante:''
+  },
+  {
     fecha:'2026-11-22', mes:'Noviembre', diaSem:'Domingo',
-    actividad:'Seguimiento congreso #2 (Zoom)',
-    modalidad:'Virtual', lugar:'Plataforma Zoom',
+    actividad:'Aposento Alto — Seguimiento #2',
+    modalidad:'Presencial', lugar:'J. Watson',
     horaInicio:'', horaCierre:'',
     encargados:'',
-    objetivo:'Tema #2: ¿Cómo poner fin a una relación que me destruye?',
+    objetivo:'Actividades de seguimiento a los que estuvieron en el congreso. Tema #2: ¿Cómo poner fin a una relación que me destruye?',
     comentarios:'',
     tiempoRestante:''
   },
@@ -705,11 +734,11 @@ const DEMO = [
   },
   {
     fecha:'2026-12-20', mes:'Diciembre', diaSem:'Domingo',
-    actividad:'Seguimiento congreso #3 (Zoom)',
-    modalidad:'Virtual', lugar:'Plataforma Zoom',
+    actividad:'Aposento Alto — Programa de Agradecimiento',
+    modalidad:'Presencial', lugar:'J. Watson',
     horaInicio:'', horaCierre:'',
     encargados:'',
-    objetivo:'Tema #3: Formas de entretenimiento que no deshonran a Dios.',
+    objetivo:'Actividades de seguimiento a los que estuvieron en el congreso. Programa de agradecimiento.',
     comentarios:'',
     tiempoRestante:''
   },
@@ -776,7 +805,9 @@ function monthGroup(mes) {
 
 function eventState(ev) {
   if ((ev.tiempoRestante||'').toLowerCase() === 'completado') return 'done';
+  if ((ev.tiempoRestante||'').toLowerCase() === 'cancelado')  return 'cancelled';
   const d = daysUntil(ev.fecha);
+  if (d !== null && d < 0) return 'done'; // pasado → completado automático
   if (d !== null) {
     const now = new Date();
     const edt = new Date(ev.fecha + 'T00:00:00');
@@ -788,7 +819,8 @@ function eventState(ev) {
 }
 
 function fmtDays(d, state) {
-  if (state==='done') return {n:'✓', l:'Completado'};
+  if (state==='done')      return {n:'✓', l:'Completado'};
+  if (state==='cancelled') return {n:'✕', l:'Cancelado'};
   if (d===null)       return {n:'—', l:''};
   if (d<0)            return {n:'✓', l:'Pasado'};
   if (d===0)          return {n:'¡HOY!', l:'', today:true};
@@ -973,7 +1005,8 @@ function render() {
 
   if (activeFilter === 'upcoming') evs = evs.filter(e => {
     const d = daysUntil(e.fecha);
-    return d !== null && d >= 0 && (e.tiempoRestante||'').toLowerCase() !== 'completado';
+    const tr = (e.tiempoRestante||'').toLowerCase();
+    return d !== null && d >= 0 && tr !== 'completado' && tr !== 'cancelado';
   });
   else if (activeFilter === 'presencial') evs = evs.filter(e => !(e.modalidad||'').toLowerCase().includes('virtual'));
   else if (activeFilter === 'virtual')    evs = evs.filter(e =>  (e.modalidad||'').toLowerCase().includes('virtual'));
@@ -982,7 +1015,12 @@ function render() {
     return n.includes('reunión directiva') || n.includes('reunion directiva');
   });
 
-  if (!showDone) evs = evs.filter(e => (e.tiempoRestante||'').toLowerCase() !== 'completado');
+  if (!showDone) evs = evs.filter(e => {
+    const tr = (e.tiempoRestante||'').toLowerCase();
+    if (tr === 'completado' || tr === 'cancelado') return false;
+    const d = daysUntil(e.fecha);
+    return d === null || d >= 0; // ocultar también los pasados automáticos
+  });
 
   const cal = document.getElementById('cal');
 
@@ -1015,7 +1053,13 @@ function render() {
 
 function renderStats() {
   const total    = allEvents.length;
-  const done     = allEvents.filter(e => (e.tiempoRestante||'').toLowerCase()==='completado').length;
+  const done = allEvents.filter(e => {
+    const tr = (e.tiempoRestante||'').toLowerCase();
+    if (tr === 'cancelado') return false;
+    if (tr === 'completado') return true;
+    const d = daysUntil(e.fecha);
+    return d !== null && d < 0;
+  }).length;
   const upcoming = allEvents.filter(e => { const d=daysUntil(e.fecha); return d!==null&&d>=0&&(e.tiempoRestante||'').toLowerCase()!=='completado'; }).length;
   document.getElementById('statsRow').innerHTML = `
     <div class="stat-box s-total">   <div class="stat-n">${total}</div>    <div class="stat-l">Total</div></div>
@@ -1044,7 +1088,7 @@ document.getElementById('filterRow').addEventListener('click', e => {
 const toggleBtn = document.getElementById('toggleDone');
 toggleBtn.addEventListener('click', () => {
   showDone = !showDone;
-  toggleBtn.textContent = showDone ? '↑ Ocultar completados' : '↓ Mostrar completados';
+  toggleBtn.textContent = showDone ? '↑ Ocultar pasados y completados' : '↓ Mostrar pasados y completados';
   render();
 });
 
